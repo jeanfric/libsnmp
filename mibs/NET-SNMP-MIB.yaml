@@ -1,0 +1,15 @@
+---
+netSnmp                    :         1.3.6.1.4.1.8072
+netSnmpObjects             :         1.3.6.1.4.1.8072.1
+netSnmpEnumerations        :         1.3.6.1.4.1.8072.3
+netSnmpModuleIDs           :         1.3.6.1.4.1.8072.3.1
+netSnmpAgentOIDs           :         1.3.6.1.4.1.8072.3.2
+netSnmpDomains             :         1.3.6.1.4.1.8072.3.3
+netSnmpNotificationPrefix  :         1.3.6.1.4.1.8072.4
+netSnmpNotifications       :         1.3.6.1.4.1.8072.4.0
+netSnmpNotificationObjects :         1.3.6.1.4.1.8072.4.1
+netSnmpConformance         :         1.3.6.1.4.1.8072.5
+netSnmpCompliances         :         1.3.6.1.4.1.8072.5.1
+netSnmpGroups              :         1.3.6.1.4.1.8072.5.2
+netSnmpExperimental        :         1.3.6.1.4.1.8072.9999
+netSnmpPlaypen             :         1.3.6.1.4.1.8072.9999.9999

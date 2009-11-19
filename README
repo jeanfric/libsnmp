@@ -1,0 +1,12 @@
+libsnmp
+=======
+
+This project is my dirty playground to learn more about the SNMP protocol and to
+toy with techniques and advices highlighted in 'Effective Java', by Joshua Bloch.
+
+As such, I don't believe it to be even near production quality but can of course
+be forked and made to evolve to become more robust and grow the required
+features one would expect from a good SNMP library.
+
+
+
