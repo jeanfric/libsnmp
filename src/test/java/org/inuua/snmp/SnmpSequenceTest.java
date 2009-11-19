@@ -1,6 +1,6 @@
 package org.inuua.snmp;
 
-import org.inuua.snmp.SnmpVariable;
+import java.io.IOException;
 import org.inuua.snmp.types.SnmpSequence;
 import org.inuua.snmp.types.SnmpInteger;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 public final class SnmpSequenceTest {
 
     @Test
-    public void testEncodingOfOneInteger() {
+    public void testEncodingOfOneInteger() throws IOException {
         SnmpInteger i = SnmpInteger.newFromNumber(4242);
         List<SnmpVariable<?>> l = new ArrayList<SnmpVariable<?>>();
         l.add(i);
@@ -23,7 +23,7 @@ public final class SnmpSequenceTest {
     }
 
     @Test
-    public void testEncodingOfTwoIntegers() {
+    public void testEncodingOfTwoIntegers() throws IOException {
         SnmpInteger i = SnmpInteger.newFromNumber(4242);
         List<SnmpVariable<?>> l = new ArrayList<SnmpVariable<?>>();
         l.add(i);

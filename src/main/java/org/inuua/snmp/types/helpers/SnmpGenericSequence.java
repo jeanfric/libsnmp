@@ -1,6 +1,7 @@
 package org.inuua.snmp.types.helpers;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import org.inuua.snmp.types.SnmpSequence;
 
 public final class SnmpGenericSequence {
 
-    public static SnmpGenericSequence newFromEncodedSnmpVariable(SnmpType type, EncodedSnmpVariable tlv) {
+    public static SnmpGenericSequence newFromEncodedSnmpVariable(SnmpType type, EncodedSnmpVariable tlv) throws IOException {
         return new SnmpGenericSequence(type, tlv);
     }
 
@@ -27,7 +28,7 @@ public final class SnmpGenericSequence {
     private final List<SnmpVariable<?>> value;
     private final SnmpType snmpType;
 
-    private SnmpGenericSequence(SnmpType type, EncodedSnmpVariable tlv) {
+    private SnmpGenericSequence(SnmpType type, EncodedSnmpVariable tlv) throws IOException {
         if (tlv.getSnmpType() != type) {
             throw new Error("The type specified in the encoded variable is not the expected type");
         }
@@ -75,7 +76,7 @@ public final class SnmpGenericSequence {
         return m;
     }
 
-    public EncodedSnmpVariable encode() {
+    public EncodedSnmpVariable encode() throws IOException {
         int num = this.value.size();
         // Roughly estimate the number of byte slots required as the number
         // of values in this sequence, times 16 bytes

@@ -1,5 +1,6 @@
 package org.inuua.snmp.types;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public final class SnmpMessage implements SnmpVariable<List<SnmpVariable<?>>> {
         return SnmpMessage.newFromList(l);
     }
 
-    public static SnmpMessage newFromEncodedSnmpVariable(EncodedSnmpVariable tlv) {
+    public static SnmpMessage newFromEncodedSnmpVariable(EncodedSnmpVariable tlv) throws IOException {
         return new SnmpMessage(tlv);
     }
 
@@ -35,7 +36,7 @@ public final class SnmpMessage implements SnmpVariable<List<SnmpVariable<?>>> {
     }
     private SnmpGenericSequence gn;
 
-    private SnmpMessage(EncodedSnmpVariable tlv) {
+    private SnmpMessage(EncodedSnmpVariable tlv) throws IOException {
         this.gn = SnmpGenericSequence.newFromEncodedSnmpVariable(this.getSnmpType(), tlv);
     }
 
@@ -44,7 +45,7 @@ public final class SnmpMessage implements SnmpVariable<List<SnmpVariable<?>>> {
     }
 
     @Override
-    public EncodedSnmpVariable encode() {
+    public EncodedSnmpVariable encode() throws IOException {
         return this.gn.encode();
     }
 

@@ -20,6 +20,15 @@ import org.inuua.snmp.types.SnmpResponse;
 
 public final class NonBlockingSnmpConnection implements SnmpConnection {
 
+    private final Set<IncomingSnmpMessageHandler> subscribers = new HashSet<IncomingSnmpMessageHandler>();
+    private final Set<IncomingVariableBindingsHandler> mibSubscribers = new HashSet<IncomingVariableBindingsHandler>();
+    private final Set<IOExceptionHandler> exceptionSubscribers = new HashSet<IOExceptionHandler>();
+    private final InetAddress hostAddress;
+    private final Integer hostPort;
+    private final SnmpVersion version;
+    private final String community;
+    private Integer requestId = 0;
+
     private static class NonBlockingMessageSender implements Runnable {
 
         private final Set<IncomingSnmpMessageHandler> subscribers;
@@ -44,6 +53,13 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
             this.socket.setSoTimeout(10000); // 10 secs
         }
 
+        public void close() {
+            if (socket != null) {
+                this.socket.close();
+            }
+        }
+
+        @Override
         public void run() {
             try {
                 SnmpMessage reply = this.sendAndReceive(this.message);
@@ -112,6 +128,13 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
             return this.requestId;
         }
 
+        public void close() {
+            if (this.socket != null) {
+                this.socket.close();
+            }
+        }
+
+        @Override
         public void run() {
             SnmpMessage reply = null;
             String currentMib = this.firstMib;
@@ -176,6 +199,10 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
         }
     }
 
+    @Override
+    public void close() {
+    }
+
     public static NonBlockingSnmpConnection newConnection(SnmpVersion version, String community, InetAddress hostAddress)
             throws SocketException {
         return new NonBlockingSnmpConnection(version, community, hostAddress);
@@ -185,14 +212,6 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
             InetAddress hostAddress, Integer hostPort) throws SocketException {
         return new NonBlockingSnmpConnection(version, community, hostAddress, hostPort);
     }
-    private final Set<IncomingSnmpMessageHandler> subscribers = new HashSet<IncomingSnmpMessageHandler>();
-    private final Set<IncomingVariableBindingsHandler> mibSubscribers = new HashSet<IncomingVariableBindingsHandler>();
-    private final Set<IOExceptionHandler> exceptionSubscribers = new HashSet<IOExceptionHandler>();
-    private final InetAddress hostAddress;
-    private final Integer hostPort;
-    private final SnmpVersion version;
-    private final String community;
-    private Integer requestId = 0;
 
     private NonBlockingSnmpConnection(SnmpVersion version, String community, InetAddress hostAddress)
             throws SocketException {
@@ -215,22 +234,31 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
         return this.requestId;
     }
 
+    @Override
     public void registerIncomingSnmpMessageHandler(IncomingSnmpMessageHandler ep) {
         this.subscribers.add(ep);
     }
 
+    @Override
     public void registerIncomingVariableBindingsHandler(IncomingVariableBindingsHandler mibMapHandler) {
         this.mibSubscribers.add(mibMapHandler);
     }
 
+    @Override
     public void registerIOExceptionHandler(IOExceptionHandler exceptionHandler) {
         this.exceptionSubscribers.add(exceptionHandler);
     }
 
+    @Override
     public void retrieveAllObjectsStartingFrom(String objectIdentifier) {
         try {
-            (new Thread(new NonBlockingTreeWalker(this.version, this.community, this.hostAddress, this.hostPort,
-                    objectIdentifier, this.subscribers, this.mibSubscribers, this.exceptionSubscribers))).start();
+            NonBlockingTreeWalker tw = new NonBlockingTreeWalker(this.version, this.community, this.hostAddress, this.hostPort,
+                    objectIdentifier, this.subscribers, this.mibSubscribers, this.exceptionSubscribers);
+            try {
+                new Thread().start();
+            } finally {
+                tw.close();
+            }
         } catch (IOException ex) {
             for (IOExceptionHandler h : this.exceptionSubscribers) {
                 h.handleIOException(ex);
@@ -238,6 +266,7 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
         }
     }
 
+    @Override
     public void retrieveOneObject(String objectIdentifier) {
         Map<SnmpObjectIdentifier, SnmpVariable<?>> m = new HashMap<SnmpObjectIdentifier, SnmpVariable<?>>();
         m.put(SnmpObjectIdentifier.newFromString(objectIdentifier), SnmpNull.newNull());
@@ -247,10 +276,16 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
         this.sendSnmpMessage(msg);
     }
 
+    @Override
     public void sendSnmpMessage(SnmpMessage msg) {
         try {
-            (new Thread(new NonBlockingMessageSender(this.hostAddress, this.hostPort, msg, this.subscribers,
-                    this.mibSubscribers, this.exceptionSubscribers))).start();
+            NonBlockingMessageSender ms = new NonBlockingMessageSender(this.hostAddress, this.hostPort, msg, this.subscribers,
+                    this.mibSubscribers, this.exceptionSubscribers);
+            try {
+                new Thread(ms).start();
+            } finally {
+                ms.close();
+            }
         } catch (IOException ex) {
             for (IOExceptionHandler h : this.exceptionSubscribers) {
                 h.handleIOException(ex);
@@ -258,14 +293,17 @@ public final class NonBlockingSnmpConnection implements SnmpConnection {
         }
     }
 
+    @Override
     public void unRegisterIncomingSnmpMessageHandler(IncomingSnmpMessageHandler ep) {
         this.subscribers.remove(ep);
     }
 
+    @Override
     public void unRegisterIncomingVariableBindingsHandler(IncomingVariableBindingsHandler mibMapHandler) {
         this.mibSubscribers.remove(mibMapHandler);
     }
 
+    @Override
     public void unRegisterIOExceptionHandler(IOExceptionHandler exceptionHandler) {
         this.exceptionSubscribers.remove(exceptionHandler);
     }

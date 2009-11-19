@@ -1,5 +1,6 @@
 package org.inuua.snmp.types;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import org.inuua.snmp.types.helpers.SnmpGenericSequence;
 
 public final class SnmpInformRequest implements SnmpPdu {
 
-    public static SnmpInformRequest newFromEncodedSnmpVariable(EncodedSnmpVariable tlv) {
+    public static SnmpInformRequest newFromEncodedSnmpVariable(EncodedSnmpVariable tlv) throws IOException {
         return new SnmpInformRequest(tlv);
     }
 
@@ -21,7 +22,7 @@ public final class SnmpInformRequest implements SnmpPdu {
     }
     private SnmpGenericSequence gn;
 
-    private SnmpInformRequest(EncodedSnmpVariable tlv) {
+    private SnmpInformRequest(EncodedSnmpVariable tlv) throws IOException {
         this.gn = SnmpGenericSequence.newFromEncodedSnmpVariable(this.getSnmpType(), tlv);
     }
 
@@ -30,7 +31,7 @@ public final class SnmpInformRequest implements SnmpPdu {
     }
 
     @Override
-    public EncodedSnmpVariable encode() {
+    public EncodedSnmpVariable encode() throws IOException {
         return this.gn.encode();
     }
 

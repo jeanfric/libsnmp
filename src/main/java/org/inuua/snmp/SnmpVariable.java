@@ -1,8 +1,10 @@
 package org.inuua.snmp;
 
+import java.io.IOException;
+
 public interface SnmpVariable<T> {
 
-    EncodedSnmpVariable encode();
+    EncodedSnmpVariable encode() throws IOException;
 
     SnmpType getSnmpType();
 

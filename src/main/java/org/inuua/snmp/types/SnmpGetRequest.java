@@ -1,5 +1,6 @@
 package org.inuua.snmp.types;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public final class SnmpGetRequest implements SnmpPdu {
         return SnmpGetRequest.newFromList(s);
     }
 
-    public static SnmpGetRequest newFromEncodedSnmpVariable(EncodedSnmpVariable tlv) {
+    public static SnmpGetRequest newFromEncodedSnmpVariable(EncodedSnmpVariable tlv) throws IOException {
         return new SnmpGetRequest(tlv);
     }
 
@@ -49,7 +50,7 @@ public final class SnmpGetRequest implements SnmpPdu {
     }
     private SnmpGenericSequence gn;
 
-    private SnmpGetRequest(EncodedSnmpVariable tlv) {
+    private SnmpGetRequest(EncodedSnmpVariable tlv) throws IOException {
         this.gn = SnmpGenericSequence.newFromEncodedSnmpVariable(this.getSnmpType(), tlv);
     }
 
@@ -58,7 +59,7 @@ public final class SnmpGetRequest implements SnmpPdu {
     }
 
     @Override
-    public EncodedSnmpVariable encode() {
+    public EncodedSnmpVariable encode() throws IOException {
         return this.gn.encode();
     }
 

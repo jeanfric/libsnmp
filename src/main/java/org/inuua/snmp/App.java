@@ -16,15 +16,18 @@ public final class App {
     public static void main(String[] args) throws SocketException, UnknownHostException, IOException, InterruptedException {
 
         SnmpConnection c = BlockingSnmpConnection.newConnection(SnmpVersion.V1, "public", InetAddress.getByName("localhost"));
+        try {
+            c.registerIncomingVariableBindingsHandler(new IncomingVariableBindingsHandler() {
 
-        c.registerIncomingVariableBindingsHandler(new IncomingVariableBindingsHandler() {
+                @Override
+                public void handleIncomingVariableBindings(Map<SnmpObjectIdentifier, SnmpVariable<?>> map) {
+                    System.out.println(map);
+                }
+            });
 
-            @Override
-            public void handleIncomingVariableBindings(Map<SnmpObjectIdentifier, SnmpVariable<?>> map) {
-                System.out.println(map);
-            }
-        });
-
-        c.retrieveAllObjectsStartingFrom("0");
+            c.retrieveAllObjectsStartingFrom("0");
+        } finally {
+            c.close();
+        }
     }
 }

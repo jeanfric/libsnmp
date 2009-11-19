@@ -21,16 +21,6 @@ import org.inuua.snmp.types.SnmpResponse;
 public final class BlockingSnmpConnection implements SnmpConnection {
 
     private static final Integer PACKET_BUFFER_SIZE = 4096;
-
-    public static BlockingSnmpConnection newConnection(SnmpVersion version, String community, InetAddress hostAddress)
-            throws SocketException {
-        return new BlockingSnmpConnection(version, community, hostAddress);
-    }
-
-    public static BlockingSnmpConnection newConnection(SnmpVersion version, String community, InetAddress hostAddress,
-            Integer hostPort) throws SocketException {
-        return new BlockingSnmpConnection(version, community, hostAddress, hostPort);
-    }
     private Integer requestId = 0;
     private final InetAddress hostAddress;
     private final Integer hostPort;
@@ -41,6 +31,16 @@ public final class BlockingSnmpConnection implements SnmpConnection {
     private final Set<IncomingVariableBindingsHandler> mibSubscribers = new HashSet<IncomingVariableBindingsHandler>();
     private final Set<IOExceptionHandler> exceptionSubscribers = new HashSet<IOExceptionHandler>();
 
+    public static BlockingSnmpConnection newConnection(SnmpVersion version, String community, InetAddress hostAddress)
+            throws SocketException {
+        return new BlockingSnmpConnection(version, community, hostAddress);
+    }
+
+    public static BlockingSnmpConnection newConnection(SnmpVersion version, String community, InetAddress hostAddress,
+            Integer hostPort) throws SocketException {
+        return new BlockingSnmpConnection(version, community, hostAddress, hostPort);
+    }
+
     private BlockingSnmpConnection(SnmpVersion version, String community, InetAddress hostAddress)
             throws SocketException {
         this.version = version;
@@ -49,6 +49,11 @@ public final class BlockingSnmpConnection implements SnmpConnection {
         this.hostPort = SnmpPort.STANDARD_PORT.portNumber();
         this.socket = new DatagramSocket();
         this.socket.setSoTimeout(10000); // 10 seconds
+    }
+
+    @Override
+    public void close() {
+        this.socket.close();
     }
 
     private BlockingSnmpConnection(SnmpVersion version, String community, InetAddress hostAddress, Integer hostPort)

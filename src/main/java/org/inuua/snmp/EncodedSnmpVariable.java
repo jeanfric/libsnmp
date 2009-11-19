@@ -2,6 +2,7 @@ package org.inuua.snmp;
 
 import java.io.ByteArrayOutputStream;
 
+import java.io.IOException;
 import org.inuua.snmp.types.SnmpBitString;
 import org.inuua.snmp.types.SnmpCounter32;
 import org.inuua.snmp.types.SnmpGauge32;
@@ -22,36 +23,40 @@ import org.inuua.snmp.types.SnmpUnsignedInteger32;
 
 public final class EncodedSnmpVariable {
 
-    private static byte[] getLengthEncoding(Integer length) {
+    private static byte[] getLengthEncoding(Integer length) throws IOException {
         ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+        try {
 
-        if (length < 128) {
-            /* Single byte representation if < 128 */
-            outBytes.write((byte) ((int) length));
+            if (length < 128) {
+                /* Single byte representation if < 128 */
+                outBytes.write((byte) ((int) length));
 
-        } else {
-            /* Multi byte representation if >= 128 */
-            byte requiredBytes = 0;
-            int temp = length;
-            while (temp > 0) {
-                requiredBytes++;
-                temp = (int) Math.floor(temp / 256.0);
+            } else {
+                /* Multi byte representation if >= 128 */
+                byte requiredBytes = 0;
+                int temp = length;
+                while (temp > 0) {
+                    requiredBytes++;
+                    temp = (int) Math.floor(temp / 256.0);
+                }
+
+                byte num = requiredBytes;
+
+                num += 128;
+                outBytes.write(num);
+
+                byte[] len = new byte[requiredBytes];
+                for (int i = requiredBytes - 1; i >= 0; --i) {
+                    len[i] = (byte) (length % 256);
+                    length = (int) Math.floor(length / 256.0);
+                }
+                outBytes.write(len, 0, requiredBytes);
             }
 
-            byte num = requiredBytes;
-
-            num += 128;
-            outBytes.write(num);
-
-            byte[] len = new byte[requiredBytes];
-            for (int i = requiredBytes - 1; i >= 0; --i) {
-                len[i] = (byte) (length % 256);
-                length = (int) Math.floor(length / 256.0);
-            }
-            outBytes.write(len, 0, requiredBytes);
+            return outBytes.toByteArray();
+        } finally {
+            outBytes.close();
         }
-
-        return outBytes.toByteArray();
     }
 
     public static EncodedSnmpVariable newFromByteArray(byte[] barray) {
@@ -122,7 +127,7 @@ public final class EncodedSnmpVariable {
         System.arraycopy(backingArr, fromIndex, this.value, 0, this.value.length);
     }
 
-    public SnmpVariable<?> asSnmpVariable() {
+    public SnmpVariable<?> asSnmpVariable() throws IOException {
 
         switch (this.getSnmpType()) {
             case INTEGER:
@@ -174,17 +179,21 @@ public final class EncodedSnmpVariable {
         return this.value.clone();
     }
 
-    public int size() {
+    public int size() throws IOException {
         return this.value.length + getLengthEncoding(this.value.length).length + 1;
     }
 
-    public byte[] toByteArray() {
+    public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-        outBytes.write(this.type.tag());
-        byte[] len = getLengthEncoding(this.value.length);
-        outBytes.write(len, 0, len.length);
-        outBytes.write(this.value, 0, this.value.length);
+        try {
+            outBytes.write(this.type.tag());
+            byte[] len = getLengthEncoding(this.value.length);
+            outBytes.write(len, 0, len.length);
+            outBytes.write(this.value, 0, this.value.length);
 
-        return outBytes.toByteArray();
+            return outBytes.toByteArray();
+        } finally {
+            outBytes.close();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package org.inuua.snmp;
 
+import java.io.IOException;
 import org.inuua.snmp.types.SnmpNull;
 import org.inuua.snmp.types.SnmpGetRequest;
 import org.inuua.snmp.types.SnmpObjectIdentifier;
@@ -13,7 +14,7 @@ import static org.junit.Assert.*;
 public final class SnmpMessageTest {
 
     @Test
-    public void testEncoding() {
+    public void testEncoding() throws IOException {
         Map<SnmpObjectIdentifier, SnmpVariable<?>> m = new HashMap<SnmpObjectIdentifier, SnmpVariable<?>>();
         m.put(SnmpObjectIdentifier.newFromString("1.3.6.1.2.1.1.9.1.4.2"), SnmpNull.newNull());
         SnmpGetRequest getReq = SnmpGetRequest.newFromDefinition(1511152378, ErrorStatus.NO_ERROR, 0, m);
@@ -32,7 +33,7 @@ public final class SnmpMessageTest {
     }
 
     @Test
-    public void testDecoding() {
+    public void testDecoding() throws IOException {
 
         Map<SnmpObjectIdentifier, SnmpVariable<?>> m = new HashMap<SnmpObjectIdentifier, SnmpVariable<?>>();
         m.put(SnmpObjectIdentifier.newFromString("1.3.6.1.2.1.1.9.1.4.2"), SnmpNull.newNull());
